@@ -25,6 +25,7 @@ Note how there is no need to write __init__() and forward() as in pytorch -
 from tvm.relay import op, var, Var, Function, Clause, PatternConstructor, PatternVar, Match, const
 from tvm.relay import TupleGetItem, Tuple, TensorType, TupleType, If
 from network import Network
+from common import Linear
 import numpy as np
 
 def lam(names, func):
