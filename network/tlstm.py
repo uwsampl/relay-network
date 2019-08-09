@@ -25,6 +25,7 @@ Note how there is no need to write __init__() and forward() as in pytorch -
 from tvm.relay import op, var, Var, Function, Clause, PatternConstructor, PatternVar, Match, const
 from tvm.relay import TupleGetItem, Tuple, TensorType, TupleType, If
 from network import Network
+from network.common import Linear
 import numpy as np
 
 def lam(names, func):
@@ -41,11 +42,11 @@ class LSTMCell(Network):
         child_h_sum = self.p.foldl(sum,
                                    op.zeros(shape=(1, memory_size), dtype=dtype),
                                    self.p.map(lam(["z"], lambda z: TupleGetItem(z, 1)), c))
-        ioux = Linear(input_size=input_size, output_size=memory_size * 3)(i)
-        iouh = Linear(input_size=memory_size, output_size=memory_size * 3)(child_h_sum)
+        ioux = Linear(input_size=input_size, output_size=memory_size * 3, dtype=dtype)(i)
+        iouh = Linear(input_size=memory_size, output_size=memory_size * 3, dtype=dtype)(child_h_sum)
         iou = ioux + iouh
-        fx = Linear(input_size=input_size, output_size=memory_size)(i)
-        fh = Linear(input_size=memory_size, output_size=memory_size)
+        fx = Linear(input_size=input_size, output_size=memory_size, dtype=dtype)(i)
+        fh = Linear(input_size=memory_size, output_size=memory_size, dtype=dtype)
         i, o, u = op.split(iou, 3, axis=1)
         i, o, u = op.sigmoid(i), op.sigmoid(o), op.tanh(u)
         def foreach_children(children):
