@@ -222,6 +222,16 @@ class Network:
                               t.type_params,
                               t.type_constraints)
 
+    def rand_init(self, ty):
+        assert isinstance(ty, relay.TensorType)
+        shape = [int(i) for i in ty.shape]
+        if ty.dtype == "float32":
+            return relay.const(np.random.normal(0, 1, shape).astype("float32"))
+        elif ty.dtype == "int32":
+            return relay.const(np.random.normal(0, 100, shape).astype("int32"))
+        else:
+            raise
+
     def get(self):
         """
         Return a function with the weights randomly initalized.
@@ -233,11 +243,6 @@ class Network:
         """
         weights = []
         for x in self.all_weights():
-            ty = x.type_annotation
-            assert isinstance(ty, relay.TensorType)
-            assert ty.dtype == 'float32'
-            shape = [int(i) for i in ty.shape]
-            weight = relay.const(np.random.normal(0, 1, shape).astype('float32'))
-            weights.append(weight)
+            weights.append(self.rand_init(x.type_annotation))
         inputs = [copy_var(v) for v in self.inputs]
         return relay.Function(inputs, self.f(*inputs, *weights))
