@@ -46,7 +46,7 @@ class LSTMCell(Network):
         ih, oh, uh = [Linear(input_size=memory_size, output_size=memory_size, dtype=dtype)(child_h_sum) for _ in range(3)]
         fx = Linear(input_size=input_size, output_size=memory_size, dtype=dtype)(i)
         fh = Linear(input_size=memory_size, output_size=memory_size, dtype=dtype)
-        i, o, u = ix + ix, ox + oh, ux + uh
+        i, o, u = ix + ih, ox + oh, ux + uh
         i, o, u = op.sigmoid(i), op.sigmoid(o), op.tanh(u)
         def foreach_children(children):
             f = op.sigmoid(fh(TupleGetItem(children, 1)) + fx)
