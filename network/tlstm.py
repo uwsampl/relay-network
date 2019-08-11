@@ -42,12 +42,11 @@ class LSTMCell(Network):
         child_h_sum = self.p.foldl(sum,
                                    op.zeros(shape=(1, memory_size), dtype=dtype),
                                    self.p.map(lam(["z"], lambda z: TupleGetItem(z, 1)), c))
-        ioux = Linear(input_size=input_size, output_size=memory_size * 3, dtype=dtype)(i)
-        iouh = Linear(input_size=memory_size, output_size=memory_size * 3, dtype=dtype)(child_h_sum)
-        iou = ioux + iouh
+        ix, ox, ux = [Linear(input_size=input_size, output_size=memory_size, dtype=dtype)(i) for _ in range(3)]
+        ih, oh, uh = [Linear(input_size=memory_size, output_size=memory_size, dtype=dtype)(child_h_sum) for _ in range(3)]
         fx = Linear(input_size=input_size, output_size=memory_size, dtype=dtype)(i)
         fh = Linear(input_size=memory_size, output_size=memory_size, dtype=dtype)
-        i, o, u = op.split(iou, 3, axis=1)
+        i, o, u = ix + ix, ox + oh, ux + uh
         i, o, u = op.sigmoid(i), op.sigmoid(o), op.tanh(u)
         def foreach_children(children):
             f = op.sigmoid(fh(TupleGetItem(children, 1)) + fx)
