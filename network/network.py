@@ -229,6 +229,8 @@ class Network:
             return relay.const(np.random.normal(0, 1, shape).astype("float32"))
         elif ty.dtype == "int32":
             return relay.const(np.random.normal(0, 100, shape).astype("int32"))
+        elif ty.dtype == "int8":
+            return relay.const(np.random.normal(0, 100, shape).astype("int8"))
         else:
             raise
 
