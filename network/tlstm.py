@@ -32,6 +32,12 @@ def lam(names, func):
     args = [Var(name) for name in names]
     return Function(args, func(*args))
 
+def sigmoid(expr, dtype):
+    return op.cast(op.sigmoid(op.cast(expr, dtype="float32")), dtype=dtype)
+
+def tanh(expr, dtype):
+    return op.cast(op.tanh(op.cast(expr, dtype="float32")), dtype=dtype)
+
 class LSTMCell(Network):
     """Defining LSTMCell by reusing Linear."""
     def build_impl(self, input_size, memory_size, dtype="float32"):
@@ -47,12 +53,12 @@ class LSTMCell(Network):
         fx = Linear(input_size=input_size, output_size=memory_size, dtype=dtype)(i)
         fh = Linear(input_size=memory_size, output_size=memory_size, dtype=dtype)
         i, o, u = ix + ih, ox + oh, ux + uh
-        i, o, u = op.sigmoid(i), op.sigmoid(o), op.tanh(u)
+        i, o, u = sigmoid(i, dtype), sigmoid(o, dtype), tanh(u, dtype)
         def foreach_children(children):
-            f = op.sigmoid(fh(TupleGetItem(children, 1)) + fx)
+            f = sigmoid(fh(TupleGetItem(children, 1)) + fx, dtype)
             return f * TupleGetItem(children, 0)
         c = self.p.foldl(sum, i * u, self.p.map(lam(["z"], foreach_children), c))
-        return Tuple([c, o * op.tanh(c)])
+        return Tuple([c, o * tanh(c, dtype)])
 
 class LSTMEncoder(Network):
     """LSTMEncoder is a simple foldl on LSTMCell."""
